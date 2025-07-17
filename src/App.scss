@@ -1,0 +1,70 @@
+@import './styles/_variables';
+//@import './styles/_fonts';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root 
+{
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+
+.App 
+{
+    max-width: 632px;
+    min-height: 200px;
+    //height: 200px;
+    //background: red;
+
+    @media (max-width: $mobile) {
+        max-width: 100%;
+    }
+}
+
+//TEXT
+
+#label
+{
+    color: var(--color-static-white);
+}
+
+#title
+{
+    font-size: 24px;
+    line-height: 24px;
+    width: 50%;
+    color: var(--color-static-white);
+
+    @media (max-width: $mobile) {
+        font-size: 20px;
+        line-height: 20px;
+        width: 65%;
+    }
+}
+
+#btn-read
+{
+    font-family: InterVariable;
+    font-weight: 400;
+    background: var(--color-fill-brand);
+    font-size: 14px;
+
+    &:hover
+    {
+        background: var(--color-fill-brand_hover);
+    }
+}
+
+.font-blickb {
+  font-family: "blickVariable", sans-serif;
+  font-weight: 700;
+}
+
+
