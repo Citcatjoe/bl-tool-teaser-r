@@ -52,9 +52,11 @@
 #btn-read
 {
     font-family: InterVariable;
-    font-weight: 400;
+    font-weight: 600;
     background: var(--color-fill-brand);
     font-size: 14px;
+    line-height: 1.2;
+    padding: 12px 24px;
 
     &:hover
     {

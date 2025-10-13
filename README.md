@@ -1,6 +1,16 @@
-TRACKING
+21 juillet 2025
 
-Compteur firestore de vue fonctionne. Testé le 15 juillet
-Compteur firestore de clics sur lien fonctionne. Testé le 15 juillet
+DONE
+- Installé OK
+- base.css OK
+- Compteurs Firebase OK
+- Compteurs Datalayer OK
+- Darkmode OK
+- Loading overlay OK
+- Regler les variable MQ OK
+- Retirer les console log OK
+- Donner un title OK
 
-Google analytics
+TODO
+- Multibrand
+- Image dinamique

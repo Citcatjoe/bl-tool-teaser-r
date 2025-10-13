@@ -6,16 +6,18 @@ import { fetchTeaserData } from './services/api';
 import { dataLayerPushView, dataLayerPushSeeAllClick, dataLayerPushLinkGlobalClick } from './services/analytics'; // Import des fonctions analytiques
 import { db } from './services/firebase';
 import { doc, updateDoc, increment } from 'firebase/firestore';
-import bgImage from './assets/img/bg.png';
+import LoadingOverlay from './components/LoadingOverlay/LoadingOverlay';
 
 // Déclaration du composant principal App
 function App() {
 // Déclaration des états locaux :
     // - `calendar` : Contient les données du calendrier récupérées depuis Firestore.
     // - `showAll` : Indique si tous les éléments du calendrier doivent être affichés.
+    // - `loading` : Indique si les données sont en cours de chargement.
     const [docId, setDocId] = useState(null);
     const [teaser, setTeaser] = useState(null);
     const [showAll, setShowAll] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     // Fonction exécutée lorsque la page est chargée
     useEffect(() => {
@@ -31,11 +33,26 @@ function App() {
         setDocId(teaserDoc); // Met à jour l'état `docId` avec la valeur de teaserDoc
 
         async function loadTeaser() {
-            const data = await fetchTeaserData(teaserDoc); // Appel à l'API pour récupérer les données.
-            setTeaser(data); // Mise à jour de l'état `calendar` avec les données récupérées.
-            
-            // Incrémenter le compteur de vues après le chargement des données
-            await incrementViewCounter(teaserDoc);
+            try {
+                const data = await fetchTeaserData(teaserDoc); // Appel à l'API pour récupérer les données.
+                
+                // Vérifier que les données ont été récupérées correctement
+                if (data && data.teaserTitle) {
+                    setTeaser(data); // Mise à jour de l'état `teaser` avec les données récupérées.
+                    
+                    // Incrémenter le compteur de vues après le chargement des données
+                    await incrementViewCounter(teaserDoc);
+                    
+                    // Le chargement est terminé SEULEMENT si les données sont valides
+                    setLoading(false);
+                } else {
+                    console.error('Données du teaser manquantes ou incorrectes');
+                    // Le loading reste à true si les données ne sont pas valides
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement du teaser:', error);
+                // Le loading reste à true en cas d'erreur
+            }
         }
 
         loadTeaser();
@@ -73,21 +90,22 @@ function App() {
 
     return (
        
-
-        <a href="https://storytelling.blick.ch/fr/2025/groenland-cette-ile-que-trump-veut-prendre-par-la-force/" id="link-global" className="block" target="_blank" onClick={handleLinkGlobalClick}>
-            <div className="App overflow-auto relative p-5">
+        <a href={teaser?.linkGlobalHref || '#'} id="link-global" className="block" target="_blank" onClick={handleLinkGlobalClick}>
+            <div className="App overflow-hidden relative p-5">
                 
 
-                <div className="absolute top-0 right-0 bottom-0 left-0 bg-cover bg-right -z-10 rounded-lg" style={{backgroundImage: `url(${bgImage})`}}></div>
+                <div className="absolute top-0 right-0 bottom-0 left-0 bg-cover bg-right -z-10 rounded-lg" style={{backgroundImage: `url(${teaser?.img})`}}></div>
                 <div className="absolute top-0 right-1/4 bottom-0 left-0 bg-cover bg-center -z-10 rounded-lg bg-gradient-to-r from-black to-transparent opacity-60"></div> 
 
-                <span id="label" className="font-i block w-full underline text-sm mb-3">À ne pas manquer</span>
+                <span id="label" className="block w-full underline text-sm mb-3">{teaser?.teaserLabel || ''}</span>
                 <span id="title" className="font-blickb block mb-5">{teaser?.teaserTitle || ''}</span>
-                <button id="btn-read" className="font-i block text-white rounded-full px-6 py-2">{teaser?.linkGlobalTxt || ''}</button>
+                <button id="btn-read" className="block text-white rounded-full">{teaser?.linkGlobalTxt || ''}</button>
 
-                
+                {loading && <LoadingOverlay />}
             </div>
+            
         </a>
+        
    
     );
 }
