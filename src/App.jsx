@@ -5,7 +5,7 @@ import Calendar from './components/Calendar/Calendar';
 import { fetchTeaserData } from './services/api';
 import { dataLayerPushView, dataLayerPushSeeAllClick, dataLayerPushLinkGlobalClick } from './services/analytics'; // Import des fonctions analytiques
 import { db } from './services/firebase';
-import { doc, updateDoc, increment } from 'firebase/firestore';
+import { doc, updateDoc, increment, runTransaction } from 'firebase/firestore';
 import LoadingOverlay from './components/LoadingOverlay/LoadingOverlay';
 
 // Déclaration du composant principal App
@@ -18,6 +18,19 @@ function App() {
     const [teaser, setTeaser] = useState(null);
     const [showAll, setShowAll] = useState(false);
     const [loading, setLoading] = useState(true);
+
+    // Fonction utilitaire pour convertir les retours à la ligne (\n) en éléments <br>
+    const nl2br = (text) => {
+        if (!text) return null;
+        // Remplace la chaîne littérale \n par de vrais sauts de ligne
+        const lines = text.split('\\n');
+        return lines.map((line, index, array) => (
+            <span key={index}>
+                {line}
+                {index < array.length - 1 && <br />}
+            </span>
+        ));
+    };
 
     // Fonction exécutée lorsque la page est chargée
     useEffect(() => {
@@ -60,46 +73,77 @@ function App() {
 
 
     async function incrementClickCounter(docId) {
+        // try {
+        //     console.log('Link Global clicked');
+        //     const calendarRef = doc(db, 'embeds', docId); // Remplacez 'questions' par le nom de votre collection
+        //     await updateDoc(calendarRef, {
+        //         counterLinkGlobalClicks: increment(1), // Incrémente la valeur de 1
+        //     });
+        //     dataLayerPushLinkGlobalClick(docId); // Appel de la fonction pour envoyer l'événement au dataLayer
+        // } catch (error) {
+        //     console.error('Erreur lors de l\'incrémentation du compteur :', error);
+        // }
+
+        if (!docId) return;
+
         try {
-            const calendarRef = doc(db, 'embeds', docId); // Remplacez 'questions' par le nom de votre collection
-            await updateDoc(calendarRef, {
-                counterLinkGlobalClicks: increment(1), // Incrémente la valeur de 1
+            const docRef = doc(db, 'embeds', docId);
+            await updateDoc(docRef, {
+                counterClicks: increment(1)
             });
-            //console.log('Compteur de clics incrémenté dans Firestore');
-            dataLayerPushLinkGlobalClick(docId); // Appel de la fonction pour envoyer l'événement au dataLayer
         } catch (error) {
-            console.error('Erreur lors de l\'incrémentation du compteur :', error);
+            console.error('Erreur lors de l\'incrémentation de counterClicks :', error);
         }
     }
 
     async function incrementViewCounter(docId) {
-        try {
-            const teaserRef = doc(db, 'embeds', docId);
-            await updateDoc(teaserRef, {
-                counterViews: increment(1), // Incrémente la valeur de 1
-            });
-            //console.log('Compteur de vues incrémenté dans Firestore');
-        } catch (error) {
-            console.error('Erreur lors de l\'incrémentation du compteur de vues :', error);
-        }
+        // try {
+        //     const teaserRef = doc(db, 'embeds', docId);
+        //     await updateDoc(teaserRef, {
+        //         counterViews: increment(1), // Incrémente la valeur de 1
+        //     });
+        //     //console.log('Compteur de vues incrémenté dans Firestore');
+        // } catch (error) {
+        //     console.error('Erreur lors de l\'incrémentation du compteur de vues :', error);
+        // }
     }
 
-    const handleLinkGlobalClick = () => {
+    const handleLinkGlobalClick = (e) => {
+        e.preventDefault();
+        
+        // On déclenche l'incrémentation en BDD
         incrementClickCounter(docId);
+        
+        // On ouvre le lien après un léger délai pour garantir que la requête ait le temps de partir
+        setTimeout(() => {
+            const href = teaser?.linkGlobalHref || '#';
+            if (href !== '#') {
+                const link = document.createElement('a');
+                link.href = href;
+                link.target = '_parent';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }, 150);
     };
 
     return (
        
         <a href={teaser?.linkGlobalHref || '#'} id="link-global" className="block" target="_blank" onClick={handleLinkGlobalClick}>
-            <div className="App overflow-hidden relative p-5">
+            <div className="App overflow-hidden relative p-3 md:p-5">
                 
 
-                <div className="absolute top-0 right-0 bottom-0 left-0 bg-cover bg-right -z-10 rounded-lg" style={{backgroundImage: `url(${teaser?.img})`}}></div>
-                <div className="absolute top-0 right-1/4 bottom-0 left-0 bg-cover bg-center -z-10 rounded-lg bg-gradient-to-r from-black to-transparent opacity-60"></div> 
+                <div className="content absolute top-0 right-0 bottom-0 left-0  -z-10" style={teaser?.img ? {backgroundImage: `url(${teaser.img})`} : {}}></div>
+                <div className="absolute top-0 right-1/2 bottom-0 left-0 bg-cover bg-center -z-10 bg-gradient-to-r from-black to-transparent opacity-70"></div> 
 
-                <span id="label" className="block w-full underline text-sm mb-3">{teaser?.teaserLabel || ''}</span>
-                <span id="title" className="font-blickb block mb-5">{teaser?.teaserTitle || ''}</span>
-                <button id="btn-read" className="block text-white rounded-full">{teaser?.linkGlobalTxt || ''}</button>
+                <div className="gradient bg-amber-100"></div>
+                <div className='absolute bottom-3 md:bottom-5'>
+                     <span id="label" className="block w-full underline text-sm mb-3">{teaser?.teaserLabel || ''}</span>
+                    <span id="title" className="font-blickb block mb-3 md:mb-5">{nl2br(teaser?.teaserTitle || '')}</span>
+                    <button id="btn-read" className="block text-white rounded-full">{teaser?.linkGlobalTxt || ''}</button>
+                </div>
+               
 
                 {loading && <LoadingOverlay />}
             </div>

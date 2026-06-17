@@ -18,13 +18,49 @@
 
 .App 
 {
-    max-width: 632px;
-    min-height: 200px;
+    width: 100%;
+    max-width: 964px;
+    min-height: 300px;
     //height: 200px;
     //background: red;
 
-    @media (max-width: $mobile) {
-        max-width: 100%;
+    @media (max-width: $sm) {
+        aspect-ratio: 8/5;
+        min-height: auto;
+        //max-width: 100%;
+
+    }
+}
+
+.content 
+{
+     height: 100%;
+    background-size: cover;
+    background-position: center center;
+
+    @media (max-width: $sm) { // below 400px
+    //position:relative;
+      width: 100%;
+      height: 100%;
+      //aspect-ratio: 8/5;
+      height: auto;
+      background-position: 50% bottom;
+    }
+}
+
+.gradient
+{
+    position: absolute;
+    top: 25%;
+    right: 0;
+    left: 0;
+    bottom: 0;
+     background: radial-gradient(50% 90% at 20% 90%, #12101099 70%, #12101000);
+    opacity: 0;
+    z-index: 0;
+
+    @media (max-width: $xs2) {
+       opacity: 0.75;
     }
 }
 
@@ -37,16 +73,21 @@
 
 #title
 {
-    font-size: 24px;
-    line-height: 24px;
-    width: 50%;
+    font-size: 30px;
+    line-height: 30px;
+    width: 100%;
     color: var(--color-static-white);
 
-    @media (max-width: $mobile) {
-        font-size: 20px;
-        line-height: 20px;
-        width: 65%;
+    @media (max-width: $md) {
+        font-size: 24px;
+        line-height: 24px;
+       // width: 65%;
     }
+
+    @media (max-width: $xs) {
+            font-size: 19px;
+            line-height: 19px;
+        }
 }
 
 #btn-read
